@@ -1,24 +1,63 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import Heading from '@/components/Heading';
-import { getReviews } from '@/lib/reviews';
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import Heading from "@/components/Heading";
+// import { getReviews, getSearchableReviews } from "@/lib/reviews";
+import { getReviews } from "@/lib/reviews";
+import PaginationBar from "@/components/PaginationBar";
+import SearchBox from "@/components/SearchBox";
+
+const PAGE_SIZE = 6;
+
+interface ReviewsPageProps {
+  searchParams: { page?: string };
+}
 
 export const metadata: Metadata = {
-  title: 'Reviews',
+  title: "Reviews",
 };
 
-export default async function ReviewsPage() {
-  const reviews = await getReviews();
+function parsePageParam(paramValue: string): number {
+  if (paramValue) {
+    const page = parseInt(paramValue);
+    if (isFinite(page) && page > 0) {
+      return page;
+    }
+  }
+  return 1;
+}
+
+// export const dynamic = "force-dynamic";
+// export const revalidate = 30; // seconds
+
+export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
+  const page = parsePageParam(searchParams.page);
+  const { reviews, pageCount } = await getReviews(PAGE_SIZE, page);
+  // фетч надин на стороні серверу
+  // const searchableReviews = await getSearchableReviews();
+
   return (
     <>
       <Heading>Reviews</Heading>
+      <div className="flex justify-between pb-3">
+        <PaginationBar href="/reviews" page={page} pageCount={pageCount} />
+        {/* <SearchBox reviews={searchableReviews} /> */}
+        <SearchBox />
+      </div>
       <ul className="flex flex-row flex-wrap gap-3">
-        {reviews.map((review) => (
-          <li key={review.slug}
-            className="bg-white border rounded shadow w-80 hover:shadow-xl">
+        {reviews.map((review, index) => (
+          <li
+            key={review.slug}
+            className="bg-white border rounded shadow w-80 hover:shadow-xl"
+          >
             <Link href={`/reviews/${review.slug}`}>
-              <img src={review.image} alt=""
-                width="320" height="180" className="rounded-t"
+              <Image
+                src={review.image}
+                alt=""
+                priority={index === 0}
+                width="320"
+                height="180"
+                className="rounded-t"
               />
               <h2 className="font-orbitron font-semibold py-1 text-center">
                 {review.title}

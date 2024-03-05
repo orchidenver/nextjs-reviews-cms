@@ -5,7 +5,7 @@ const url = 'http://localhost:1337/api/reviews' + '?' + qs.stringify({
     fields: ['slug', 'title', 'subtitle', 'publishedAt'], // add fields with data
     populate: { image: { fields: ['url'] } }, // add media & path
     sort: ['publishedAt:desc'],
-    pagination: { pageSize: 6 }, // get 6 reviews initially
+    pagination: { pageSize: 6, page: 1 }, // get 6 reviews initially
 }, { encodeValuesOnly: true }); // not encode params names, only values
 console.log('url:', url);
 const response = await fetch(url);
